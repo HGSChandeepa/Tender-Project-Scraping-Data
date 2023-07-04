@@ -25,59 +25,83 @@ async function scrapeData() {
     await newPage.goto(link);
 
     // Wait for the data section to load
-    await newPage.waitForSelector(".box.boxW.listInner");
+    await newPage.waitForSelector("#mainContent > div > div.row");
 
-    // Extract data from the box.boxW.listInner section
-    const sectionData = await newPage.$$eval(
-      ".box.boxW.listInner",
-      (sections) =>
-        sections.map((section) => {
-          const titleElement = section.querySelector("p.lead");
-          const title = titleElement ? titleElement.textContent.trim() : "";
+    // Extract data from the post section
+    const sectionData = await newPage.$eval(
+      "#mainContent > div > div.row",
+      (section) => {
+        //title
+        const titleElement = section.querySelector(
+          "#mainContent > div > div.row > div.col-sm-4 > div.box.boxY.boxY1 > p"
+        );
+        const title = titleElement ? titleElement.textContent.trim() : "";
 
-          const atmIdElement = section.querySelector(
-            ".list-desc:nth-child(2) > .list-desc-inner > a"
-          );
-          const atmId = atmIdElement ? atmIdElement.textContent.trim() : "";
+        //atmId
+        const atmIdElement = section.querySelector(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(1) > div"
+        );
+        const atmId = atmIdElement ? atmIdElement.textContent.trim() : "";
 
-          const closeDateTimeElement = section.querySelector(
-            ".list-desc:nth-child(3) > .list-desc-inner"
-          );
-          const closeDateTime = closeDateTimeElement
-            ? closeDateTimeElement.textContent.trim()
-            : "";
+        //agency
 
-          const agencyElement = section.querySelector(
-            ".list-desc:nth-child(4) > .list-desc-inner"
-          );
-          const agency = agencyElement ? agencyElement.textContent.trim() : "";
+        const agencyElement = section.querySelector(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(2) > div"
+        );
+        const agency = agencyElement ? agencyElement.textContent.trim() : "";
+        //category
+        const categoryElement = section.querySelector(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(3) > div"
+        );
+        const category = categoryElement
+          ? categoryElement.textContent.trim()
+          : "";
 
-          const categoryElement = section.querySelector(
-            ".list-desc:nth-child(5) > .list-desc-inner"
-          );
-          const category = categoryElement
-            ? categoryElement.textContent.trim()
-            : "";
+        //closeDateTime
+        const closeDateTimeElement = section.querySelector(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(4) > div"
+        );
+        const closeDateTime = closeDateTimeElement
+          ? closeDateTimeElement.textContent.trim()
+          : "";
+        //publishDateTime
+        const publishDateTimeElement = section.querySelector(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(5) > div"
+        );
+        const publishDateTime = publishDateTimeElement
+          ? publishDateTimeElement.textContent.trim()
+          : "";
 
-          const descriptionElement = section.querySelector(
-            ".list-desc:nth-child(6) > .list-desc-inner"
-          );
-          const description = descriptionElement
-            ? descriptionElement.textContent.trim()
-            : "";
+        //location
+        const locationElement = section.querySelector(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(6) > div"
+        );
+        const location = locationElement
+          ? locationElement.textContent.trim()
+          : "";
 
-          return {
-            title,
-            atmId,
-            closeDateTime,
-            agency,
-            category,
-            description,
-          };
-        })
+        //description
+        const descriptionElement = section.querySelector(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(13) > div"
+        );
+        const description = descriptionElement
+          ? descriptionElement.textContent.trim()
+          : "";
+
+        return {
+          title,
+          atmId,
+          agency,
+          category,
+          closeDateTime,
+          publishDateTime,
+          location,
+          description,
+        };
+      }
     );
 
-    data.push(...sectionData); // Add the scraped data to the array
+    data.push(sectionData); // Add the scraped data to the array
 
     await newPage.close();
   }
@@ -91,7 +115,7 @@ async function scrapeData() {
     }
   });
 
-  console.log(data);
+  // console.log(data);
   await browser.close();
 }
 
