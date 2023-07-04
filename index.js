@@ -14,7 +14,15 @@ async function scrapeData() {
   // Extract the links within the specified selector
   const links = await page.$$eval(
     "#mainContent > div > div:nth-child(11) > div a",
-    (linkElements) => linkElements.map((element) => element.href)
+    (linkElements) => {
+      // Extract href values from link elements
+      const hrefs = linkElements.map((element) => element.href);
+
+      // Remove duplicate href values
+      const uniqueHrefs = [...new Set(hrefs)];
+
+      return uniqueHrefs;
+    }
   );
 
   const data = []; // Initialize an empty array to store the scraped data
@@ -30,7 +38,7 @@ async function scrapeData() {
     // Extract data from the post section
     const sectionData = await newPage.$eval(
       "#mainContent > div > div.row",
-      (section) => {
+      (section, link) => {
         //title
         const titleElement = section.querySelector(
           "#mainContent > div > div.row > div.col-sm-4 > div.box.boxY.boxY1 > p"
@@ -44,11 +52,11 @@ async function scrapeData() {
         const atmId = atmIdElement ? atmIdElement.textContent.trim() : "";
 
         //agency
-
         const agencyElement = section.querySelector(
           "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(2) > div"
         );
         const agency = agencyElement ? agencyElement.textContent.trim() : "";
+
         //category
         const categoryElement = section.querySelector(
           "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(3) > div"
@@ -64,6 +72,7 @@ async function scrapeData() {
         const closeDateTime = closeDateTimeElement
           ? closeDateTimeElement.textContent.trim()
           : "";
+
         //publishDateTime
         const publishDateTimeElement = section.querySelector(
           "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(5) > div"
@@ -89,6 +98,7 @@ async function scrapeData() {
           : "";
 
         return {
+          link,
           title,
           atmId,
           agency,
@@ -98,7 +108,8 @@ async function scrapeData() {
           location,
           description,
         };
-      }
+      },
+      link
     );
 
     data.push(sectionData); // Add the scraped data to the array
@@ -115,7 +126,6 @@ async function scrapeData() {
     }
   });
 
-  // console.log(data);
   await browser.close();
 }
 
