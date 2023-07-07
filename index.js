@@ -61,17 +61,29 @@ async function scrapeData() {
         const categoryElement = section.querySelector(
           "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(3) > div"
         );
-        const category = categoryElement
+        let category = categoryElement
           ? categoryElement.textContent.trim()
           : "";
+
+        // Extract only the category text
+        const categoryCodeIndex = category.indexOf(" - ");
+        if (categoryCodeIndex !== -1) {
+          category = category.substring(categoryCodeIndex + 3);
+        }
 
         //closeDateTime
         const closeDateTimeElement = section.querySelector(
           "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(4) > div"
         );
-        const closeDateTime = closeDateTimeElement
+        let closeDateTime = closeDateTimeElement
           ? closeDateTimeElement.textContent.trim()
           : "";
+
+        // Extract only the date from the closeDateTime
+        const dateIndex = closeDateTime.indexOf(" ");
+        if (dateIndex !== -1) {
+          closeDateTime = closeDateTime.substring(0, dateIndex);
+        }
 
         //publishDateTime
         const publishDateTimeElement = section.querySelector(
@@ -86,15 +98,26 @@ async function scrapeData() {
           "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(6) > div"
         );
         const location = locationElement
-          ? locationElement.textContent.trim()
-          : "";
+          ? locationElement.textContent
+              .trim()
+              .split("\n")
+              .map((item) => item.trim())
+          : [];
 
-        //description
+        //description one
         const descriptionElement = section.querySelector(
           "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(13) > div"
         );
-        const description = descriptionElement
+        const descriptionOne = descriptionElement
           ? descriptionElement.textContent.trim()
+          : "";
+
+        //description two
+        const descriptionElement2 = section.querySelector(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(14) > div > p"
+        );
+        const descriptionTwo = descriptionElement2
+          ? descriptionElement2.textContent.trim()
           : "";
 
         return {
@@ -106,7 +129,8 @@ async function scrapeData() {
           closeDateTime,
           publishDateTime,
           location,
-          description,
+          descriptionOne,
+          descriptionTwo,
         };
       },
       link
