@@ -26,30 +26,75 @@ async function scrapeData() {
       return uniqueHrefs;
     });
 
-    const tenderTitles = [];
+    const tenderData = [];
 
     // Loop through each link and navigate to the tender page
     for (const link of links) {
       const tenderPage = await browser.newPage();
       await tenderPage.goto(link);
 
-      // Wait for the tender title to load
+      // Wait for the tender data to load
       await tenderPage.waitForSelector(
-        "#content_content > table:nth-child(1) > tbody"
+        "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(5) > tbody"
       );
 
-      // Extract and store the tender title
-      const tenderTitle = await tenderPage.$eval(".TITLE", (titleElement) =>
-        titleElement.textContent.trim().replace(/\s+/g, " ")
+      // Extract and store the tender information
+      const agency = await tenderPage.$eval(
+        "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(2) > tbody > tr > td > span:nth-child(2)",
+        (element) => element.textContent.trim()
       );
 
-      tenderTitles.push(tenderTitle);
+      const atmId = await tenderPage.$eval(
+        "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(3) > td:nth-child(2)",
+        (element) => element.textContent.trim()
+      );
+
+      const category = await tenderPage.$eval(
+        "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(2) > td:nth-child(2)",
+        (element) => element.textContent.trim()
+      );
+
+      const publishedTime = await tenderPage.$eval(
+        "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(4) > td:nth-child(2)",
+        (element) => element.textContent.trim()
+      );
+
+      const closingDate = await tenderPage.$eval(
+        "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(5) > td:nth-child(2)",
+        (element) => element.textContent.trim()
+      );
+
+      const description = await tenderPage.$eval(
+        "#content_content > table:nth-child(5) > tbody > tr > td:nth-child(1)",
+        (element) => element.textContent.trim().replace(/[\n\t]+/g, " ")
+      );
+
+      const title = await tenderPage.$eval(".TITLE", (element) =>
+        element.textContent.trim()
+      );
+
+      // All the locations are QLD
+      const location = "QLD";
+
+      const tender = {
+        title,
+        agency,
+        atmId,
+        category,
+        location,
+        publishedTime,
+        closingDate,
+        description,
+        link,
+      };
+
+      tenderData.push(tender);
 
       await tenderPage.close(); // Close the tender page
     }
 
-    // Store the tender titles in a JSON file
-    const data = JSON.stringify(tenderTitles, null, 2);
+    // Store the tender data in a JSON file
+    const data = JSON.stringify(tenderData, null, 2);
     fs.writeFile("QT-tenderData.json", data, (err) => {
       if (err) {
         console.log(err);
