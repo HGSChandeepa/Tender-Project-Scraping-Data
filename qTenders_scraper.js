@@ -54,12 +54,12 @@ async function scrapeData() {
         (element) => element.textContent.trim()
       );
 
-      const publishedTime = await tenderPage.$eval(
+      const publishedDateTime = await tenderPage.$eval(
         "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(4) > td:nth-child(2)",
         (element) => element.textContent.trim()
       );
 
-      const closingDate = await tenderPage.$eval(
+      const closingDateTime = await tenderPage.$eval(
         "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(5) > td:nth-child(2)",
         (element) => element.textContent.trim()
       );
@@ -73,6 +73,17 @@ async function scrapeData() {
         element.textContent.trim()
       );
 
+      //Region/s
+
+      const region = await tenderPage.$eval(
+        "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(7) > td:nth-child(2)",
+        (element) =>
+          element.textContent
+            .trim()
+            .split("\n")
+            .map((item) => item.trim())
+      );
+
       // All the locations are QLD
       const location = "QLD";
 
@@ -82,8 +93,9 @@ async function scrapeData() {
         atmId,
         category,
         location,
-        publishedTime,
-        closingDate,
+        region,
+        publishedDateTime,
+        closingDateTime,
         description,
         link,
       };
