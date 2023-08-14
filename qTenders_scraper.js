@@ -38,7 +38,7 @@ async function scrapeData() {
         "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(5) > tbody"
       );
 
-      // Extract and store the tender information
+      // Extra  ct and store the tender information
       const agency = await tenderPage.$eval(
         "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(2) > tbody > tr > td > span:nth-child(2)",
         (element) => element.textContent.trim()
@@ -85,7 +85,7 @@ async function scrapeData() {
       );
 
       // All the locations are QLD
-      const location = "QLD";
+      const location = ["QLD"];
 
       const tender = {
         title,
