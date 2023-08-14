@@ -54,15 +54,29 @@ async function scrapeData() {
         (element) => element.textContent.trim()
       );
 
+      //dates converter
+      function extractDatePart(inputString) {
+        const startIndex = inputString.indexOf(",") + 1;
+        const endIndex = inputString.indexOf(" at");
+        if (startIndex !== -1 && endIndex !== -1) {
+          return inputString.slice(startIndex, endIndex).trim();
+        }
+        return null; // Return null if the format is not as expected
+      }
+
       const publishedDateTime = await tenderPage.$eval(
         "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(4) > td:nth-child(2)",
         (element) => element.textContent.trim()
       );
 
+      const publishedDate = extractDatePart(publishedDateTime);
+
       const closingDateTime = await tenderPage.$eval(
         "#content_content > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(5) > tbody > tr:nth-child(5) > td:nth-child(2)",
         (element) => element.textContent.trim()
       );
+
+      const closingDate = extractDatePart(closingDateTime);
 
       const description = await tenderPage.$eval(
         "#content_content > table:nth-child(5) > tbody > tr > td:nth-child(1)",
@@ -94,8 +108,10 @@ async function scrapeData() {
         category,
         location,
         region,
-        publishedDateTime,
-        closingDateTime,
+        // publishedDateTime,
+        publishedDate,
+        // closingDateTime,
+        closingDate,
         description,
         link,
       };
