@@ -10,7 +10,7 @@ async function scrapeData() {
     const baseUrl =
       "https://suppliers.buy.nsw.gov.au/opportunity/search?types=Tenders";
     let currentPage = 1;
-    const allLinks = [];
+    const allData = [];
 
     while (currentPage <= 9) {
       // Navigate to the current page
@@ -37,16 +37,35 @@ async function scrapeData() {
         break;
       }
 
-      // Add the links from the current page to the overall list
-      allLinks.push(...links);
+      // Loop through the links and scrape data from each linked page
+      for (const link of links) {
+        await page.goto(link);
+        await page.waitForSelector("body > div.wrapper > div.main ");
+
+        const title = await page.evaluate(() => {
+          const headline = document.querySelector(
+            "body > div.wrapper > div.main > div.headline > div > h1"
+          );
+          return headline ? headline.textContent.trim() : null;
+        });
+
+        // Add the scraped data to the overall list
+        if (title) {
+          allData.push({
+            link,
+            title,
+          });
+        }
+      }
 
       // Move to the next page
       currentPage++;
     }
 
-    // Print all scraped links
-    console.log(allLinks);
+    // Print all scraped data (links and titles)
+    console.log(allData);
 
+    // Close the browser after scraping 9 pages
     await browser.close();
   } catch (error) {
     console.error("An error occurred:", error);
