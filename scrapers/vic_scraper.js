@@ -13,7 +13,7 @@ async function scrapeData() {
 
     const totalPages = 4; // Define the total number of pages to scrape
 
-    const allLinks = [];
+    const allData = [];
 
     for (let currentPage = 1; currentPage <= totalPages; currentPage++) {
       // Navigate to the current page
@@ -23,23 +23,32 @@ async function scrapeData() {
       // Wait for the main data body to load
       await page.waitForSelector("#content > div.tender-table");
 
-      // Get the links from the 2nd <td> tag in each table row
-      const links = await page.evaluate(() => {
-        const linkElements = document.querySelectorAll(
-          "tbody tr td:nth-child(2) a"
-        );
-        const hrefs = Array.from(linkElements).map(
-          (linkElement) => linkElement.href
-        );
-        return hrefs;
+      // Get the links, opening date, and closing date from each row
+      const data = await page.evaluate(() => {
+        const rows = Array.from(document.querySelectorAll("tbody tr"));
+        return rows.map((row) => {
+          const linkElement = row.querySelector("td:nth-child(2) a");
+          const openingDateElement = row.querySelector(".opening_date");
+          const closingDateElement = row.querySelector(".closing_date");
+
+          return {
+            link: linkElement ? linkElement.href : "",
+            openingDate: openingDateElement
+              ? openingDateElement.textContent.trim()
+              : "",
+            closingDate: closingDateElement
+              ? closingDateElement.textContent.trim()
+              : "",
+          };
+        });
       });
 
-      // Add the links from the current page to the overall list
-      allLinks.push(...links);
+      // Add the data from the current page to the overall list
+      allData.push(...data);
     }
 
-    // Print all scraped links
-    console.log(allLinks);
+    // Print all scraped data
+    console.log(allData);
 
     await browser.close();
   } catch (error) {
