@@ -1,1 +1,1 @@
-#tenderTable-253189 > tbody
+#tenderSearchResultsTable > tbody > tr:nth-child(1) > td:nth-child(4) > a:nth-child(1)
