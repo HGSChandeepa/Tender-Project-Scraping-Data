@@ -1,5 +1,1 @@
-body > div.wrapper > div.main > div.headline > div > h1
-body > div.wrapper > div.main > div.headline > div > h1
-
-
-body > div.wrapper > div.main
+#tenderTable-253189 > tbody
