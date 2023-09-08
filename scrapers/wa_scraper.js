@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer");
 
-async function tas_ScraperData() {
+async function wa_ScraperData() {
   try {
     const browser = await puppeteer.launch({
       headless: false,
@@ -64,4 +64,4 @@ async function tas_ScraperData() {
   }
 }
 
-tas_ScraperData();
+wa_ScraperData();
