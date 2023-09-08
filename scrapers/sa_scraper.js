@@ -8,11 +8,19 @@ async function scrapeData() {
 
     const page = await browser.newPage();
 
-    await page.goto("https://www.tenders.sa.gov.au/tender/search?preset=open");
+    const pageUrls = [
+      "https://www.tenders.sa.gov.au/tender/search?preset=new&page=1",
+      "https://www.tenders.sa.gov.au/tender/search?preset=new&page=2",
+    ];
 
     const allData = [];
 
-    while (true) {
+    for (const pageUrl of pageUrls) {
+      await page.goto(pageUrl);
+
+      //wait for the table to load
+      await page.waitForSelector("tbody tr");
+
       // Get the links and text from the second <td> in each row
       const data = await page.evaluate(() => {
         const rows = Array.from(document.querySelectorAll("tbody tr"));
@@ -37,25 +45,6 @@ async function scrapeData() {
 
       // Add the data from the current page to the overall list
       allData.push(...data);
-
-      // Check if there's a next page
-      const nextPageButton = await page.$(".paging a.page[title='Next Page']");
-      if (nextPageButton) {
-        // Extract the JavaScript code from the href attribute
-        const href = await page.evaluate(
-          (el) => el.getAttribute("href"),
-          nextPageButton
-        );
-
-        // Execute the JavaScript code to navigate to the next page
-        await page.evaluate((href) => eval(href), href);
-
-        // Wait for navigation
-        await page.waitForNavigation();
-      } else {
-        // If there's no next page, exit the loop
-        break;
-      }
     }
 
     // Print the scraped data

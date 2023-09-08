@@ -154,18 +154,11 @@ async function scrapeData() {
 
       tenderData.push(tender);
 
+      //print to console
+      console.log(tender);
+
       await tenderPage.close();
     }
-
-    // Store the tender data in a JSON file
-    const data = JSON.stringify(tenderData, null, 2);
-    fs.writeFile("data_store/QT-tenderData.json", data, (err) => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("Data saved to QT-tenderData.json");
-      }
-    });
 
     await browser.close();
   } catch (error) {
