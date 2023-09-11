@@ -44,11 +44,97 @@ async function scrapeData() {
 
       // Extract the title
       const title = await page.$eval(
-        ".form-control-static",
-        (element) => element.textContent
+        "#mainContent > div:nth-child(5) > div.col-lg-8 > div > div.panel-body.form-horizontal > div:nth-child(2) > div > div > p",
+        (element) => element.textContent.replace(/\n/g, "")
       );
 
-      results.push({ title, link });
+      let idNumber = await page.$eval(
+        "#mainContent > div:nth-child(5) > div.col-lg-8 > div > div.panel-body.form-horizontal > div:nth-child(1) > div > div > p",
+        (element) => element.textContent.replace(/\n/g, "")
+      );
+
+      idNumber = "nt-" + idNumber;
+
+      const description = await page.$eval(
+        "#qtol-description-container",
+        (element) => element.textContent.replace(/\n/g, "")
+      );
+      const publishedDate = await page.$eval(
+        "div.form-group:has(label[for='OpenDate']) p.form-control-static",
+        (element) => {
+          const text = element.textContent.trim();
+          const dateMatch = text.match(/\d{2}\/\d{2}\/\d{4}/);
+          if (dateMatch) {
+            const [day, month, year] = dateMatch[0].split("/");
+            const monthNames = [
+              "Jan",
+              "Feb",
+              "Mar",
+              "Apr",
+              "May",
+              "Jun",
+              "Jul",
+              "Aug",
+              "Sep",
+              "Oct",
+              "Nov",
+              "Dec",
+            ];
+            return `${day} ${monthNames[parseInt(month, 10) - 1]} ${year}`;
+          } else {
+            return "Not specified";
+          }
+        }
+      );
+
+      const closingDate = await page.$eval(
+        "div.form-group:has(label[for='CloseDate']) p.form-control-static",
+        (element) => {
+          const text = element.textContent.trim();
+          const dateMatch = text.match(/\d{2}\/\d{2}\/\d{4}/);
+          if (dateMatch) {
+            const [day, month, year] = dateMatch[0].split("/");
+            const monthNames = [
+              "Jan",
+              "Feb",
+              "Mar",
+              "Apr",
+              "May",
+              "Jun",
+              "Jul",
+              "Aug",
+              "Sep",
+              "Oct",
+              "Nov",
+              "Dec",
+            ];
+            return `${day} ${monthNames[parseInt(month, 10) - 1]} ${year}`;
+          } else {
+            return "Not specified";
+          }
+        }
+      );
+
+      const category = await page.$eval(
+        "div.form-group:has(label[for='Category']) p.form-control-static",
+        (element) => {
+          return element.textContent.trim();
+        }
+      );
+
+      const location = ["NT"];
+
+      results.push({
+        title,
+        link,
+        idNumber,
+        description,
+        publishedDate,
+        closingDate,
+        category,
+        location,
+        regions: [],
+      });
 
       await page.close();
     }

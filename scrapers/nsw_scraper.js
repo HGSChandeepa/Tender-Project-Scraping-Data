@@ -98,7 +98,7 @@ async function scrapeData() {
             })
           : null;
 
-        const Location = "NSW";
+        const Location = ["NSW"];
 
         // Add the scraped data to the overall list if title exists
         if (title) {
@@ -111,6 +111,7 @@ async function scrapeData() {
             category,
             Location,
             description,
+            regions: [],
           };
 
           // Add regions if they exist

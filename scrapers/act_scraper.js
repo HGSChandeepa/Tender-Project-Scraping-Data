@@ -101,7 +101,7 @@ async function act_ScraperData() {
               .trim()
         );
 
-        const location = "ACT";
+        const location = ["ACT"];
         const region = [];
         const updatedDateTime = new Date().toLocaleDateString();
 

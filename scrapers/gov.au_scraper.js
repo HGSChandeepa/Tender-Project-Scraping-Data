@@ -106,6 +106,7 @@ async function scrapeData() {
           openingDate,
           description,
           location,
+          regions: [],
         });
       }
     }
