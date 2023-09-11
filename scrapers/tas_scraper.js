@@ -50,7 +50,94 @@ async function tas_ScraperData() {
         (titleElement) => titleElement.textContent.trim()
       );
 
-      data.push({ title: title, link: link });
+      let idNumber = await page.$eval(
+        "#content > form > div > div > fieldset > div:nth-child(6) > div.editor-field.displayhighlight > div > ul > li",
+        (idElement) => idElement.textContent.trim()
+      );
+      idNumber = "tas-" + idNumber;
+
+      const description = await page.$eval(
+        ".richTextDisplay",
+        (descriptionElement) => {
+          let descriptionText = descriptionElement.textContent.trim();
+          // Remove newlines and tabs
+          descriptionText = descriptionText
+            .replace(/\n/g, "")
+            .replace(/\t/g, "");
+          // Remove '+' characters
+          descriptionText = descriptionText.replace(/\+/g, "");
+          return descriptionText;
+        }
+      );
+
+      const category = await page.$eval(
+        "#content > form > div > div > fieldset > div:nth-child(11) > div.editor-field > div > ul > li",
+        (element) => {
+          return element.textContent.trim();
+        }
+      );
+
+      // -------------------------------
+      let closingDate;
+
+      const closingDateElement = await page.$(
+        "#content > form > div > div > fieldset > div:nth-child(8) > div.editor-field.displayhighlight > div > ul > li"
+      );
+
+      if (closingDateElement) {
+        const text = await closingDateElement.evaluate((element) =>
+          element.textContent.trim()
+        );
+
+        // Use regular expression to extract the date part
+        const dateMatch = text.match(/\d{2}\/\d{2}\/\d{4}/);
+
+        if (dateMatch) {
+          const [day, month, year] = dateMatch[0].split("/");
+          const monthNames = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ];
+          closingDate = `${day} ${monthNames[parseInt(month, 10) - 1]} ${year}`;
+        } else {
+          closingDate = "Not specified"; // Set a default value when no date is found
+        }
+      } else {
+        closingDate = "Not specified"; // Set a default value when the element is not found
+      }
+
+      // --------------------------
+
+      const publishedDate = new Date().toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+
+      const location = "TAS";
+      const region = [];
+
+      data.push({
+        title,
+        link,
+        idNumber,
+        description,
+        category,
+        publishedDate,
+        closingDate,
+        location,
+        region,
+      });
     }
 
     // Print the extracted data
