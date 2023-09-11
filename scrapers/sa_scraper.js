@@ -9,8 +9,7 @@ async function scrapeData() {
     const page = await browser.newPage();
 
     const pageUrls = [
-      "https://www.tenders.sa.gov.au/tender/search?preset=new&page=1",
-      "https://www.tenders.sa.gov.au/tender/search?preset=new&page=2",
+      "https://www.tenders.sa.gov.au/tender/search?preset=open",
     ];
 
     const allData = [];
@@ -18,7 +17,7 @@ async function scrapeData() {
     for (const pageUrl of pageUrls) {
       await page.goto(pageUrl);
 
-      //wait for the table to load
+      // Wait for the table to load
       await page.waitForSelector("tbody tr");
 
       // Get the links and text from the second <td> in each row
@@ -32,7 +31,7 @@ async function scrapeData() {
 
           // Check if both linkText and linkHref are not empty before including in the result
           if (linkText && linkHref) {
-            return { text: linkText, link: linkHref };
+            return { title: linkText, link: linkHref };
           }
 
           // If both linkText and linkHref are empty, skip this row
@@ -47,7 +46,70 @@ async function scrapeData() {
       allData.push(...data);
     }
 
-    // Print the scraped data
+    // Iterate through the links and get the title from each page
+    for (const dataItem of allData) {
+      const { link } = dataItem;
+      await page.goto(link);
+
+      // Wait for the title to load
+      await page.waitForSelector("#tenderTitle");
+
+      // Extract the title
+      const title = await page.$eval("#tenderTitle", (element) =>
+        element.textContent.trim()
+      );
+
+      let idNumber = await page.$eval(
+        "#opportunityGeneralDetails > div:nth-child(4) > div.col-sm-9.col-md-10",
+        (element) => element.textContent.trim()
+      );
+
+      const category = await page.$eval(
+        "#opportunityGeneralDetails > div:nth-child(5) > div.col-sm-9.col-md-10",
+        (element) => element.textContent.trim()
+      );
+
+      let description = (
+        await page.$$eval("#tenderDescription p", (paragraphs) => {
+          return paragraphs.map((p) => p.textContent.trim());
+        })
+      ).join("\n");
+
+      description = description.replace(/\n/g, "").replace(/\+/g, " ");
+
+      const publishedDate = new Date().toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+
+      idNumber = "sa-" + idNumber;
+      const closingDate = await page.$eval("#tenderClosingTime", (element) => {
+        const text = element.textContent.trim();
+        const dateMatch = text.match(/(\d{1,2}\s\w+\s\d{4})/);
+
+        if (dateMatch) {
+          return dateMatch[0];
+        } else {
+          return "Not specified";
+        }
+      });
+
+      const location = ["SA"];
+      const regions = [];
+
+      // Update dataItems
+      dataItem.idNumber = idNumber;
+      dataItem.title = title;
+      dataItem.category = category;
+      dataItem.description = description;
+      dataItem.publishedDate = publishedDate;
+      dataItem.closingDate = closingDate;
+      dataItem.location = location;
+      dataItem.regions = regions;
+    }
+
+    // Print the scraped data with titles
     console.log(allData);
 
     await browser.close();
