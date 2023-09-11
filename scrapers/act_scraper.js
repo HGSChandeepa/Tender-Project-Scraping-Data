@@ -72,7 +72,15 @@ async function act_ScraperData() {
         const title = await page.$eval("#tenderTitle", (titleElement) =>
           titleElement.textContent.trim()
         );
-        const idNumber = await page.$eval(
+
+        // Extract the category and get the part after the "-"
+        const categoryRaw = await page.$eval(
+          "#opportunityGeneralDetails > div:nth-child(5)",
+          (categoryElement) => categoryElement.textContent.trim()
+        );
+        const category = categoryRaw.split(" - ")[1].trim();
+
+        const idNumberData = await page.$eval(
           "#opportunityGeneralDetails > div:nth-child(4) > div.col-sm-9.col-md-10",
           (idNumberElement) =>
             idNumberElement.textContent
@@ -81,16 +89,7 @@ async function act_ScraperData() {
               .replace(/\s+/g, " ") // Replace multiple spaces with a single space
               .trim()
         );
-
-        const category = await page.$eval(
-          "#opportunityGeneralDetails > div:nth-child(5)",
-          (categoryElement) =>
-            categoryElement.textContent
-              .trim()
-              .replace(/[\t\n]/g, " ") // Remove tabs and newlines
-              .replace(/\s+/g, " ") // Replace multiple spaces with a single space
-              .trim()
-        );
+        idNumber = "act-" + idNumberData;
 
         const description = await page.$eval(
           "#tenderDescription > div:nth-child(2)",
@@ -104,19 +103,16 @@ async function act_ScraperData() {
 
         const location = "ACT";
         const region = [];
-        const updatedDateTime = new Date().toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        });
-        // Push the title, link, opening date, and formatted closing date to the data array
+        const updatedDateTime = new Date().toLocaleDateString();
+
+        // Push the title, link, opening date, category, and formatted closing date to the data array
         allData.push({
           title,
           link,
           publishedDate,
           closingDate: formattedClosingDate,
-          idNumber,
           category,
+          idNumber,
           description,
           location,
           region,
