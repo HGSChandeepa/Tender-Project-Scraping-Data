@@ -48,8 +48,65 @@ async function scrapeData() {
           return titleElement ? titleElement.textContent.trim() : "";
         });
 
+        const idNumber = await page.$eval(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(1) > div",
+          (idElement) => idElement.textContent.trim()
+        );
+
+        // Extract the closing date from the page and clean it
+        const closingDateRaw = await page.$eval(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(4) > div",
+          (closingDateElement) => closingDateElement.textContent.trim()
+        );
+
+        // Extract only the date part from the closingDateRaw
+        const closingDateMatch = closingDateRaw.match(
+          /(\d{1,2}-[A-Za-z]{3}-\d{4})/
+        );
+        const closingDate = closingDateMatch
+          ? closingDateMatch[0]
+          : "Not specified";
+
+        const openingDate = await page.$eval(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(5) > div",
+          (openingDateElement) => openingDateElement.textContent.trim()
+        );
+        // Extract the location from the page
+        const locationRaw = await page.$eval(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(6) > div",
+          (locationElement) => locationElement.textContent.trim()
+        );
+
+        // Split the raw location text into an array based on ","
+        const location = locationRaw
+          .split(",")
+          .map((location) => location.trim())
+          .join(", ");
+
+        // Extract the description from the page
+        const description = await page.$eval(
+          "#mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(14), #mainContent > div > div.row > div.col-sm-8 > div.box.boxW.listInner > div:nth-child(15)",
+          (descriptionElement) => {
+            const paragraphs = Array.from(
+              descriptionElement.querySelectorAll("p")
+            );
+            const descriptionText = paragraphs
+              .map((paragraph) => paragraph.textContent.trim())
+              .join(" ");
+            return descriptionText || "Not specified";
+          }
+        );
+
         // Create an object with title and link and push it to the allLinks array
-        allLinks.push({ title, link });
+        allLinks.push({
+          title,
+          link,
+          idNumber,
+          closingDate,
+          openingDate,
+          description,
+          location,
+        });
       }
     }
 
