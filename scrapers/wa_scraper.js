@@ -51,8 +51,85 @@ async function wa_ScraperData() {
         return titleElement ? titleElement.textContent.trim() : "";
       });
 
+      // ----------------------------------------
+
+      const descriptionElement = await page.$('textarea[name="desc"]');
+      let description = "";
+
+      if (descriptionElement) {
+        description = await page.evaluate((element) => {
+          // Extract text content without HTML tags
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = element.value;
+          return tempDiv.textContent || tempDiv.innerText || "";
+        }, descriptionElement);
+
+        // Remove newline characters and extra spaces
+        description = description
+          .replace(/\n/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      //  ----------------------------------------
+
+      let idNumber = await page.evaluate(() => {
+        const idElement = document.querySelector(
+          "#hcontent > div.pcontent > table:nth-child(7) > tbody > tr:nth-child(3) > td:nth-child(2)"
+        );
+        return idElement ? idElement.textContent.trim() : "";
+      });
+
+      idNumber = "wa-" + idNumber;
+
+      // Extract the closing date or set it to "No date found"
+      let closingDate = "No date found";
+      const closingDateElement = await page.$('span[style="color: #990000"]');
+
+      if (closingDateElement) {
+        const text = await closingDateElement.evaluate((span) =>
+          span.textContent.trim()
+        );
+
+        const dateAndTimeMatch = text.match(/Closes (.+?) at (.+)/);
+
+        if (dateAndTimeMatch && dateAndTimeMatch.length >= 3) {
+          const rawDate = dateAndTimeMatch[1].trim();
+          const formattedClosingDate = new Date(rawDate).toLocaleDateString(
+            "en-GB",
+            {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            }
+          );
+
+          closingDate = formattedClosingDate;
+        }
+      }
+
+      const publishedDate = new Date().toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+
+      const location = ["WA"];
+      const region = [];
+
       // Push the title and link into the scrapedData array
-      scrapedData.push({ title, link });
+      scrapedData.push({
+        title,
+        link,
+        idNumber,
+        closingDate,
+        description,
+        publishedDate,
+        location,
+        region,
+      });
+
+      // Wait for 2 seconds before visiting the next link
     }
 
     // Print the extracted data
