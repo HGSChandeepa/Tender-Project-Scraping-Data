@@ -17,7 +17,7 @@ async function scrapeData() {
     const baseUrl =
       "https://www.tenders.vic.gov.au/tender/search?preset=open&page=";
 
-    const totalPages = 4; // Define the total number of pages to scrape
+    const totalPages = 4;
 
     const allData = [];
 
@@ -26,10 +26,8 @@ async function scrapeData() {
       const pageUrl = `${baseUrl}${currentPage}`;
       await page.goto(pageUrl);
 
-      // Wait for the main data body to load
       await page.waitForSelector("#content > div.tender-table");
 
-      // Get the links, opening date, and closing date from each row
       const data = await page.evaluate(() => {
         const rows = Array.from(document.querySelectorAll("tbody tr"));
         return rows.map((row) => {
@@ -53,11 +51,13 @@ async function scrapeData() {
       allData.push(...data);
     }
 
-    // Browse each link and store the title
     for (const item of allData) {
       const link = item.link;
       const newPage = await browser.newPage();
+      //
+      await newPage.setDefaultNavigationTimeout(0);
       await newPage.goto(link);
+      //
       await newPage.waitForSelector("#tenderTitle");
 
       const title = await newPage.$eval("#tenderTitle", (titleElement) =>
@@ -71,10 +71,13 @@ async function scrapeData() {
 
       idNumber = "vic-" + idNumber;
 
-      const category = await newPage.$eval(
+      let category = await newPage.$eval(
         "#opportunityGeneralDetails > div:nth-child(5) > div.col-sm-9.col-md-10",
         (categoryElement) => categoryElement.textContent.trim()
       );
+
+      // Clean up the category string
+      category = category.replace(/\n|\t|\+/g, " ").trim();
 
       //wait for the description to load
       await newPage.waitForSelector("#tenderDescription");
@@ -112,7 +115,6 @@ async function scrapeData() {
       item.closingDate = await formatDate(item.closingDate);
     }
 
-    // Print all scraped data
     console.log(allData);
 
     await browser.close();

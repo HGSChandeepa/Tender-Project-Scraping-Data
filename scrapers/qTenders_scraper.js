@@ -1,21 +1,4 @@
-const { initializeApp } = require("firebase/app");
-const firebase = require("firebase/database");
 const puppeteer = require("puppeteer");
-const fs = require("fs");
-
-// const firebaseConfig = {
-//   apiKey: "AIzaSyCh0SMAVznYtQGyvAMDOM7Gp44ccP0obBg",
-//   authDomain: "bixbe-569b8.firebaseapp.com",
-//   projectId: "bixbe-569b8",
-//   storageBucket: "bixbe-569b8.appspot.com",
-//   messagingSenderId: "295388156463",
-//   appId: "1:295388156463:web:52a1067c902a3a0e0e6cda",
-//   databaseURL:
-//     "https://bixbe-569b8-default-rtdb.asia-southeast1.firebasedatabase.app/",
-// };
-
-// Initialize Firebase
-// const app = initializeApp(firebaseConfig);
 
 async function scrapeData() {
   try {
@@ -137,20 +120,6 @@ async function scrapeData() {
         description,
         link,
       };
-
-      //store in firebase
-      // Store the tender data in Firebase
-      // try {
-      //   const database = firebase.getDatabase(app);
-      //   const tenderRef = firebase.ref(database, "tenders");
-      //   await firebase.set(
-      //     firebase.child(tenderRef, "qld-" + idNumber),
-      //     tender
-      //   ); // Store under "qld-idNumber"
-      //   console.log("Tender data stored in Firebase:", "qld-" + idNumber);
-      // } catch (firebaseError) {
-      //   console.error("Error storing tender data in Firebase:", firebaseError);
-      // }
 
       tenderData.push(tender);
 
